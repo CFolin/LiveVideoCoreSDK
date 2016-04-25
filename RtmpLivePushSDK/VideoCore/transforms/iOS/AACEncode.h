@@ -49,6 +49,7 @@ namespace videocore { namespace iOS {
         ~AACEncode();
 
         void setOutput(std::shared_ptr<IOutput> output) { m_output = output; };
+        void setAACCodec();
         void pushBuffer(const uint8_t* const data, size_t size, IMetadata& metadata);
         
         void setBitrate(int bitrate);

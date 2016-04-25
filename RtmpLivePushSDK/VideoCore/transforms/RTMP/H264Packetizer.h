@@ -41,7 +41,10 @@ namespace videocore { namespace rtmp {
     public:
         void pushBuffer(const uint8_t* const data, size_t size, IMetadata& metadata);
         void setOutput(std::shared_ptr<IOutput> output);
+        void setSpspps();
         void setEpoch(const std::chrono::steady_clock::time_point epoch) { m_epoch = epoch; };
+        
+        bool m_sentConfig;
         
     private:
 
@@ -57,7 +60,7 @@ namespace videocore { namespace rtmp {
         
         int  m_ctsOffset;
         
-        bool m_sentConfig;
+
     };
     
 } // rtmp

@@ -39,6 +39,7 @@ namespace videocore { namespace rtmp {
 
         void pushBuffer(const uint8_t* const data, size_t size, IMetadata& metadata);
         void setOutput(std::shared_ptr<IOutput> output);
+        void setAACCodec();
         void setEpoch(const std::chrono::steady_clock::time_point epoch) { m_epoch = epoch; };
 
     private:

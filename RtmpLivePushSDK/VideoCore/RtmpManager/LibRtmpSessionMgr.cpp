@@ -33,7 +33,7 @@ namespace videocore
                                         unsigned char* pData){
         int iRet = 0;
         if (_sendDataQueue.size() >= _iMaxQueueLength) {
-            CleanQueue();
+            CleanQueue(); /* TODO: 需要优化 */
             iRet = 1;
         }
         pthread_mutex_lock(&_mConnstatMutex);
@@ -43,7 +43,7 @@ namespace videocore
         pNewItem->uiTimestamp = uiTimestamp;
         pNewItem->pRtmpBody = (unsigned char*)malloc(uiLength);
         if (pNewItem->pRtmpBody != NULL) {
-            memcpy(pNewItem->pRtmpBody, pData, uiLength);
+            memcpy(pNewItem->pRtmpBody, pData, uiLength); /* TOO: 有内存拷贝 */
         }
         _sendDataQueue.push(pNewItem);
         pthread_mutex_unlock(&_mConnstatMutex);
@@ -174,9 +174,16 @@ namespace videocore
         m_sendQueue.enqueue([=]() {
             ClientState_t iFlag = kClientStateNone;
             while(!_iEndFlag){
+                /* IsConnectd 是 librtmp 接口 */
                 if ((0 == _rtmpSession->IsConnected()) || (0 == _rtmpSession->GetConnectedFlag())){
+                    
                     _rtmpSession->Connect();
+                    
+                    iFlag = kClientStateNone;
+                    
+                    /* 是否已经 Connect 过 */
                     if (0 != _rtmpSession->IsConnected()) {
+                        /* Connect 成功 */
                         if(_iEndFlag){
                             break;
                         }
@@ -187,6 +194,7 @@ namespace videocore
                         usleep(100);
                         continue;
                     }else{
+                        /* Connect 之前 */
                         if (kClientStateSessionStarted != iFlag) {
                             if(_iEndFlag){
                                 break;
@@ -200,17 +208,20 @@ namespace videocore
                         continue;
                     }
                 }
+                
+                /* Connect 是同步处理，为什么要这个判断？没有意义啊 */
                 if ((0 == _rtmpSession->IsConnected()) && (0 != _rtmpSession->GetConnectedFlag())){
                     _rtmpSession->SetConnectedFlag(FALSE);
 
-                    if (0 == _rtmpSession->IsConnected()) {
-                        _rtmpSession->Connect();
-                    }
+                    //if (0 == _rtmpSession->IsConnected()) {  /* 为什么还判断一次? */
+                        _rtmpSession->Connect(); /* 发送 Connect */
+                    //}
                     if (0 != _rtmpSession->IsConnected()) {
                         if(_iEndFlag){
                             break;
                         }
                         if(iFlag != kClientStateSessionStarted){
+                            /* Setup、Play */
                             m_callback(*this, kClientStateSessionStarted);
                             iFlag = kClientStateSessionStarted;
                         }
@@ -222,6 +233,7 @@ namespace videocore
                                 break;
                             }
                             if(iFlag != kClientStateHandshake0){
+                                /* 连接源 */
                                 m_callback(*this, kClientStateHandshake0);
                                 iFlag = kClientStateHandshake0;
                             }

@@ -224,6 +224,7 @@ namespace videocore { namespace iOS {
         
         return noErr;
     }
+    
     void
     AACEncode::pushBuffer(const uint8_t* const data, size_t size, IMetadata& metadata)
     {
@@ -302,6 +303,11 @@ namespace videocore { namespace iOS {
             }
             m_converterMutex.unlock();
         }
+    }
+    
+    void
+    AACEncode::setAACCodec() {
+         m_sentConfig = false;
     }
 }
 }

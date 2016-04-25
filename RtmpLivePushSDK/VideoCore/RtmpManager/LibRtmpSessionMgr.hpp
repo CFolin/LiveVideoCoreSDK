@@ -94,6 +94,7 @@ namespace videocore
         void setSessionParameters(IMetadata& parameters);
         void setBandwidthCallback(BandwidthCallback callback);
     private:
+        //std::shared_ptr<ITransform> m_packetizer;
         LibRtmpSession* _rtmpSession;
         LibRTMPSessionStateCallback        m_callback;
         char _szRtmpUrl[256];

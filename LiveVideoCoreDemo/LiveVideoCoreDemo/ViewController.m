@@ -90,7 +90,7 @@
     
     [self UIInit];
     
-    _RtmpUrlTextField.text = @"rtmp://192.168.100.100/live/123456";
+    _RtmpUrlTextField.text = @"rtmp://172.18.15.146/live/sodo";
 }
 
 - (void)didReceiveMemoryWarning {

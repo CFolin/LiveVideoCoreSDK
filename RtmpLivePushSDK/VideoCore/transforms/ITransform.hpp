@@ -37,6 +37,8 @@ namespace videocore {
     {
     public:
         virtual void setOutput(std::shared_ptr<IOutput> output) = 0;
+        virtual void setSpspps() {};
+        virtual void setAACCodec() {};
         virtual ~ITransform() {};
     };
 }

@@ -91,7 +91,7 @@ namespace videocore { namespace iOS {
                 settings = @{AVVideoCodecKey: AVVideoCodecH264,
                              AVVideoCompressionPropertiesKey: @{AVVideoAverageBitRateKey: @(m_bitrate),
                                                                 AVVideoMaxKeyFrameIntervalKey: @(m_fps*2),
-                                                                AVVideoProfileLevelKey: AVVideoProfileLevelH264Baseline31
+                                                                AVVideoProfileLevelKey: AVVideoProfileLevelH264High40
                                                                 },
                              AVVideoWidthKey: @(m_frameW),
                              AVVideoHeightKey: @(m_frameH)

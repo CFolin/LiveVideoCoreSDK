@@ -116,6 +116,7 @@ namespace videocore { namespace simpleApi {
 
     std::shared_ptr<videocore::IOutputSession> m_outputSession;
 
+    BOOL    m_addCodec;
 
     // properties
 
@@ -543,11 +544,22 @@ namespace videocore { namespace simpleApi {
                                                                   break;
                                                               case kClientStateSessionStarted:
                                                               {
+                                                                  //[bSelf addEncodersAndPacketizers];
+                                                                  if (self->m_addCodec == false) {
 
-                                                                  __block VCSimpleSession* bSelf = self;
-                                                                  dispatch_async(_graphManagementQueue, ^{
-                                                                      [bSelf addEncodersAndPacketizers];
-                                                                  });
+                                                                      __block VCSimpleSession* bSelf = self;
+                                                                      dispatch_async(_graphManagementQueue, ^{
+                                                                          [bSelf addEncodersAndPacketizers];
+                                                                      });
+                                                                      
+                                                                      self->m_addCodec = true;
+                                                                      
+                                                                  } else {
+                                                                      DLog("SetSpspps: %d\n", state);
+                                                                      m_h264Packetizer->setSpspps();
+                                                                      m_aacEncoder->setAACCodec();
+                                                                      m_aacPacketizer->setAACCodec();                                                                  }
+                                                                  
                                                               }
                                                                   self.rtmpSessionState = VCSessionStateStarted;
 
@@ -656,6 +668,8 @@ namespace videocore { namespace simpleApi {
     m_aacEncoder.reset();
 
     m_outputSession.reset();
+    
+    m_addCodec = false;
 
     _bitrate = _bpsCeiling;
 
@@ -840,7 +854,7 @@ namespace videocore { namespace simpleApi {
     }
     {
         m_h264Packetizer = std::make_shared<videocore::rtmp::H264Packetizer>(ctsOffset);
-        m_aacPacketizer = std::make_shared<videocore::rtmp::AACPacketizer>(self.audioSampleRate, self.audioChannelCount, ctsOffset);
+        m_aacPacketizer = std::make_shared<videocore::rtmp::AACPacketizer>(self.audioSampleRate,self.audioChannelCount, ctsOffset);
 
         m_h264Split->setOutput(m_h264Packetizer);
         m_aacSplit->setOutput(m_aacPacketizer);
@@ -859,7 +873,6 @@ namespace videocore { namespace simpleApi {
 
     m_h264Packetizer->setOutput(m_outputSession);
     m_aacPacketizer->setOutput(m_outputSession);
-
     
 }
 - (void) addPixelBufferSource: (UIImage*) image

@@ -59,11 +59,16 @@ namespace videocore { namespace rtmp {
 
         RTMPMetadata_t outMeta(ts);
 
-        if(inSize == 2 && !m_asc[0] && !m_asc[1]) {
-            m_asc[0] = inBuffer[0];
-            m_asc[1] = inBuffer[1];
+        if(inSize == 2) {
+            if(!m_asc[0] && !m_asc[1]) {
+                
+                m_asc[0] = inBuffer[0];
+                m_asc[1] = inBuffer[1];
+            }
+            m_sentAudioConfig = false;
         }
-
+        
+       
         if(output) {
 
             flags = FLV_CODECID_AAC | flvSampleRate | FLV_SAMPLESSIZE_16BIT | flvStereoOrMono;
@@ -71,9 +76,9 @@ namespace videocore { namespace rtmp {
             outBuffer.reserve(inSize + flags_size);
 
             put_byte(outBuffer, flags);
-            put_byte(outBuffer, m_sentAudioConfig);
+            put_byte(outBuffer, m_sentAudioConfig); /* 服务端解析codec的标志 */
 
-            if(!m_sentAudioConfig) {
+            if(!m_sentAudioConfig ) {
                 m_sentAudioConfig = true;
                 put_buff(outBuffer, (uint8_t*)m_asc, sizeof(m_asc));
 
@@ -92,6 +97,11 @@ namespace videocore { namespace rtmp {
     AACPacketizer::setOutput(std::shared_ptr<IOutput> output)
     {
         m_output = output;
+    }
+    
+    void
+    AACPacketizer::setAACCodec() {
+        m_sentAudioConfig = false;
     }
 
 }

@@ -15,18 +15,20 @@
 #include <memory.h>
 #include "sps_decode.h"
 #include "include/librtmp/rtmp.h"
+#include "include/librtmp/log.h"
+
 
 #define DATA_ITEMS_MAX_COUNT 100
 #define RTMP_DATA_RESERVE_SIZE 400
 
-#define RTMP_CONNECTION_TIMEOUT 1500
+#define RTMP_CONNECTION_TIMEOUT 1000
 #define RTMP_RECEIVE_TIMEOUT    2
 
 typedef struct _DataItem
 {
     char* data;
     int size;
-    int headlen;
+    int headlen; /* what head ? */
 }DataItem;
 
 typedef struct _RTMPMetadata
@@ -59,6 +61,7 @@ LibRtmpSession::LibRtmpSession(char* szRtmpUrl):_pRtmp(NULL)
     _pNaluItems = (DataItem*)malloc(sizeof(DataItem)*DATA_ITEMS_MAX_COUNT);
     _pMetaData = (RTMPMetadata*)malloc(sizeof(RTMPMetadata));
     //pthread_mutex_init(&_mConnstatMutex,NULL);
+    RTMP_LogSetLevel(RTMP_LOGINFO);
 }
 
 LibRtmpSession::~LibRtmpSession(){
@@ -115,8 +118,7 @@ int LibRtmpSession::Connect(){
         return iRet;
     }
     
-    RTMP_EnableWrite(_pRtmp);
-    _pRtmp->Link.timeout = RTMP_RECEIVE_TIMEOUT;
+
     if (RTMP_ConnectEx(_pRtmp, NULL, RTMP_CONNECTION_TIMEOUT) == FALSE)
     {
         RTMP_Close(_pRtmp);
@@ -126,6 +128,10 @@ int LibRtmpSession::Connect(){
         //pthread_mutex_unlock(&_mConnstatMutex);
         return iRet;
     }
+    
+    _pRtmp->m_outChunkSize = 4096;
+    _pRtmp->Link.timeout = RTMP_RECEIVE_TIMEOUT;
+    RTMP_EnableWrite(_pRtmp);
     
     if (RTMP_ConnectStream(_pRtmp,10) == FALSE)
     {
@@ -165,6 +171,7 @@ int LibRtmpSession::IsConnected(){
         return 0;
     }
     //pthread_mutex_lock(&_mConnstatMutex);
+    // librtmp 返回 (r->m_sb.sb_socket != -1)
     int iRet = RTMP_IsConnected(_pRtmp);
     //pthread_mutex_unlock(&_mConnstatMutex);
     return iRet;
@@ -255,6 +262,7 @@ void LibRtmpSession::MakeAudioSpecificConfig(char* pConfig, int aactype, int sam
 //    return;
 }
 
+/* 这个函数为什么没有被调用? */
 int LibRtmpSession::SendAudioSpecificConfig(int aactype, int sampleRate, int channels)
 {
     char* szAudioSpecData;

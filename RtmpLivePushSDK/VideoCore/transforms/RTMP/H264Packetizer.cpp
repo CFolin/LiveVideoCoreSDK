@@ -37,6 +37,13 @@ namespace videocore { namespace rtmp {
     {
         m_output = output;
     }
+    
+    void
+    H264Packetizer::setSpspps()
+    {
+        m_sentConfig = false; //为发送 spspps
+    }
+
     void H264Packetizer::pushBuffer(const uint8_t* const inBuffer, size_t inSize, IMetadata& inMetadata)
     {
         std::vector<uint8_t>& outBuffer = m_outbuffer;
@@ -98,9 +105,9 @@ namespace videocore { namespace rtmp {
             put_byte(outBuffer, !is_config);
             put_be24(outBuffer, pts - dts);             // Decoder delay
             
-            if(is_config) {
+            if(is_config ) {
                 // create modified SPS/PPS buffer
-                if(m_sps.size() > 0 && m_pps.size() > 0 && !m_sentConfig) {
+                if(m_sps.size() > 0 && m_pps.size() > 0 && !m_sentConfig && (flags & FLV_FRAME_KEY)) {
                     put_buff(outBuffer, &conf[0], conf.size());
                     m_sentConfig = true;
                 } else {
